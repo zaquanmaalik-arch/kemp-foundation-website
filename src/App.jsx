@@ -38,10 +38,9 @@ import {
   UserCheck 
 } from 'lucide-react';
 
-// Replace with your Formspree Form ID from formspree.io (e.g., "xpznkwer")
+
 const FORMSPREE_FORM_ID = "xaewdjgq";
 
-// Optional: Replace with your Firebase config when ready for cloud persistence
 const firebaseConfig = {
   apiKey: "demo-key",
   authDomain: "kemp-foundation.firebaseapp.com",
