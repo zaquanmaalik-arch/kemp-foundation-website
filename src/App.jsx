@@ -38,6 +38,10 @@ import {
   UserCheck 
 } from 'lucide-react';
 
+// Replace with your Formspree Form ID from formspree.io (e.g., "xpznkwer")
+const FORMSPREE_FORM_ID = "xaewdjgq";
+
+// Optional: Replace with your Firebase config when ready for cloud persistence
 const firebaseConfig = {
   apiKey: "demo-key",
   authDomain: "kemp-foundation.firebaseapp.com",
@@ -54,7 +58,7 @@ try {
   auth = getAuth(app);
   db = getFirestore(app);
 } catch (e) {
-  console.log("Firebase initialized in preview mode");
+  console.log("Firebase initialized in local mode");
 }
 
 function KempFoundationLogo({ size = "md" }) {
@@ -95,6 +99,7 @@ export default function App() {
   const [surveyAnswers, setSurveyAnswers] = useState({});
   const [surveySubmitting, setSurveySubmitting] = useState(false);
   const [surveySubmitted, setSurveySubmitted] = useState(false);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [founderImgError, setFounderImgError] = useState(false);
   
@@ -181,11 +186,33 @@ export default function App() {
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
-    setContactSubmitted(true);
-    setTimeout(() => {
-      setContactSubmitted(false);
-      setContactModalOpen(false);
-    }, 2500);
+    setContactSubmitting(true);
+    const formData = new FormData(e.target);
+
+    try {
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setContactSubmitting(false);
+        setContactSubmitted(true);
+        setTimeout(() => {
+          setContactSubmitted(false);
+          setContactModalOpen(false);
+        }, 2500);
+      } else {
+        setContactSubmitting(false);
+        alert("There was an issue sending your message. Please try again.");
+      }
+    } catch (err) {
+      setContactSubmitting(false);
+      alert("Submission error. Please check your connection and try again.");
+    }
   };
 
   return (
@@ -1168,10 +1195,15 @@ export default function App() {
 
                 <button 
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={contactSubmitting}
+                  className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
-                  <Send className="w-4 h-4 text-emerald-400" />
-                  <span>Send Message</span>
+                  {contactSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  ) : (
+                    <Send className="w-4 h-4 text-emerald-400" />
+                  )}
+                  <span>{contactSubmitting ? "Sending..." : "Send Message"}</span>
                 </button>
               </form>
             )}
